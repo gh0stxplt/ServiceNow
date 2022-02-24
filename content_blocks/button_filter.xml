@@ -41,8 +41,4 @@
         <input style="margin:5px;border-radius:3px;color:#fff;background-color:#1f8476;border:1px solid transparent;border-color:#10463f;font-size:14px;padding:6px 9px;" id="applyFilter" type="button" value="Apply Filter" onclick="applyFilter();" />
     </div>
     
-<<<<<<< HEAD
 </j:jelly>
-=======
-</j:jelly>
->>>>>>> 865b4a3751d4336a4c43390f0d2319d1b6f5c6e2
