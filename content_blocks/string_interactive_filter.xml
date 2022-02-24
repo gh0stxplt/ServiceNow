@@ -1,8 +1,5 @@
 <!-- This is the content block that relates to the macro string_interactive_filter_search -->
-<<<<<<< HEAD
-=======
 <!-- Replace {your_table_name} and {table_field} and {macro_name_here} (including the brackets) with their respective values. To change the operation, replace LIKE -->
->>>>>>> 865b4a3751d4336a4c43390f0d2319d1b6f5c6e2
 
 <?xml version="1.0" encoding="utf-8" ?>
 <j:jelly trim="false" xmlns:j="jelly:core" xmlns:g="glide" xmlns:j2="null" xmlns:g2="null">

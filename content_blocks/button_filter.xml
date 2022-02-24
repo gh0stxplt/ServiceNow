@@ -19,11 +19,7 @@
                     id: filter_message.id,
                     filters: [filter_message]
                 }, false);
-<<<<<<< HEAD
             customHandler.applyFilter(filter_message.table, filter_message.filter);
-=======
-            customHandler.publishFilter(filter_message.table, filter_message.filter);
->>>>>>> 865b4a3751d4336a4c43390f0d2319d1b6f5c6e2
         }
         
         function clearFilter() {
