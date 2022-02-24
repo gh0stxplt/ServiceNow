@@ -1,0 +1,52 @@
+<!-- 
+    This is a content block that allows you to create buttons for interactive filtering onclick. 
+    Style attributes mirror system default buttons and are wrapped in a flex div to center.
+-->
+
+<?xml version="1.0" encoding="utf-8" ?>
+<j:jelly trim="false" xmlns:j="jelly:core" xmlns:g="glide" xmlns:j2="null" xmlns:g2="null">
+    <script>
+        var customHandler = new DashboardMessageHandler("unique_id");
+    
+        function applyFilter () {
+            var filter_message = {};
+            filter_message.id = "unique_id";
+            filter_message.table = "{table_name}";
+        
+            <!-- Add your own filter query -->
+            filter_message.filter = "{encoded_filter_string}";
+            SNC.canvas.interactiveFilters.setDefaultValue({
+                    id: filter_message.id,
+                    filters: [filter_message]
+                }, false);
+<<<<<<< HEAD
+            customHandler.applyFilter(filter_message.table, filter_message.filter);
+=======
+            customHandler.publishFilter(filter_message.table, filter_message.filter);
+>>>>>>> 865b4a3751d4336a4c43390f0d2319d1b6f5c6e2
+        }
+        
+        function clearFilter() {
+            var filter_message = {};
+            filter_message.id = "unique_id";
+            filter_message.table = "{table_name}";
+            filter_message.filter = "";
+            SNC.canvas.interactiveFilters.setDefaultValue({
+                    id: filter_message.id,
+                    filters: [filter_message]
+                }, false);
+            customHandler.removeFilter();
+        }
+    </script>   
+ 
+    Custom filter content block for button clicks. Buttons can be copied and related to a new function to add more complexity.<br/>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;">
+        <input style="margin:5px;border-radius:3px;color:#fff;background-color:#1f8476;border:1px solid transparent;border-color:#10463f;font-size:14px;padding:6px 9px;" id="clear" type="button" value="Clear" onclick="clearFilter();" />
+        <input style="margin:5px;border-radius:3px;color:#fff;background-color:#1f8476;border:1px solid transparent;border-color:#10463f;font-size:14px;padding:6px 9px;" id="applyFilter" type="button" value="Apply Filter" onclick="applyFilter();" />
+    </div>
+    
+<<<<<<< HEAD
+</j:jelly>
+=======
+</j:jelly>
+>>>>>>> 865b4a3751d4336a4c43390f0d2319d1b6f5c6e2

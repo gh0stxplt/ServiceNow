@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<j:jelly trim="false" xmlns:j="jelly:core" xmlns:g="glide" xmlns:j2="null" xmlns:g2="null">
+
+<div id="${jvar_name}_if_display" class="form-horizontal" style="margin:0 10px 15px;">
+<input id='${jvar_name}_if_text' class="form-control widget-content" value="" />
+</div>
+<div id="${jvar_name}_mapping" style="display: none">${jvar_mapping}</div>
+<script>
+    var tables${jvar_name} = JSON.parse($j("#${jvar_name}_mapping").text());
+    console.log(tables${jvar_name});
+
+    // load default filters
+    window.SNC.canvas.interactiveFilters.fetchDefaultValues(SNC.canvas.layoutJson.canvasSysId);
+
+    // init widget information
+    var if_obj${jvar_name} = $j("#${jvar_name}_if_display");
+    //Get Unique id for publisher
+    var if_widgetId${jvar_name} = if_obj${jvar_name}.closest(".grid-widget-content")[0].getAttribute("data-original-widget-sysid");
+
+    console.log('Widget ID: ' + if_widgetId${jvar_name});
+
+    // init DashboardMessageHandler
+    var ${jvar_name}DMH = new DashboardMessageHandler(if_widgetId${jvar_name});
+
+    var ${jvar_name}_text = $j('#${jvar_name}_if_text');
+    // handle the field changes
+    ${jvar_name}_text.change(function()
+    {
+        var filterObj = {id: if_widgetId${jvar_name}, filters: []};
+        if (${jvar_name}_text.val().length > 0) {
+            for(var t = 0; t &lt; tables${jvar_name}.length; t++)
+            {
+                console.log('adding filter for table: ' + tables${jvar_name}[t].table);
+                filterObj.filters.push({
+                    table: tables${jvar_name}[t].table,
+                    filter: tables${jvar_name}[t].filterPrepend + ${jvar_name}_text.val() + tables${jvar_name}[t].filterAppend
+                });
+            }
+
+            console.log(filterObj);
+            // add the filter
+            ${jvar_name}DMH.publishMessage(filterObj.filters);
+            // set the default value for next reload
+            window.SNC.canvas.interactiveFilters.setDefaultValue(filterObj, true);
+        } else {
+            ${jvar_name}DMH.removeFilter();
+        }
+    });
+</script>
+</j:jelly>
