@@ -2,7 +2,7 @@
 Date: 5/18/2022
 Created by: Logan Poynter
 
-Purpose: Script include to lookup a CI record based on the provided user and CI type. 
+Purpose: Script include to lookup a CI record based on the provided user and CI type. Called by lostAssetLookup client script.
 Use case: Populating lost/stolen incident forms with "Lost/Stolen" category
 Subcategory of "Phone" locates the User's Communication Device CI; 
 Subcategory of "Laptop" locates the User's Primary Workstation CI
