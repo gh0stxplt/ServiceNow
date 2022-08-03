@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?><unload unload_date="2022-08-03 19:08:06">
+<sys_remote_update_set action="INSERT_OR_UPDATE">
+<application display_value="Global">global</application>
+<application_name>Global</application_name>
+<application_scope>global</application_scope>
+<application_version/>
+<collisions/>
+<commit_date/>
+<deleted/>
+<description>Update set containing necessary components to automate the complete implementation VTB stand-up process utilizing an inbound action to process a spreadsheet attachment, create the VTB, lanes, private tasks, and cards associated with each task.
+
+Included are:
+Inbound Email Action
+Script Include
+Transform Script
+Table Transform Map
+2 Field Maps</description>
+<inserted/>
+<name>Automate VTB Creation</name>
+<origin_sys_id/>
+<parent display_value=""/>
+<release_date/>
+<remote_base_update_set display_value=""/>
+<remote_parent_id/>
+<remote_sys_id>0a25b8252f301110860bdcb6f699b6aa</remote_sys_id>
+<state>loaded</state>
+<summary/>
+<sys_class_name>sys_remote_update_set</sys_class_name>
+<sys_created_by>admin</sys_created_by>
+<sys_created_on>2022-08-03 19:08:06</sys_created_on>
+<sys_id>2bfe86562f811110860bdcb6f699b699</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_updated_by>admin</sys_updated_by>
+<sys_updated_on>2022-08-03 19:08:06</sys_updated_on>
+<update_set display_value=""/>
+<update_source display_value=""/>
+<updated/>
+</sys_remote_update_set>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sysevent_in_email_action_10557c252f301110860bdcb6f699b6dd</name>
+<payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update sys_domain="global" table="sysevent_in_email_action"&gt;&lt;sysevent_in_email_action action="INSERT_OR_UPDATE"&gt;&lt;action&gt;record_action&lt;/action&gt;&lt;active&gt;true&lt;/active&gt;&lt;assignment_operator/&gt;&lt;condition_script/&gt;&lt;description/&gt;&lt;event_name&gt;email.read&lt;/event_name&gt;&lt;filter_condition table="sys_email"&gt;subjectSTARTSWITHCreate VTB:^EQ&lt;item endquery="false" field="subject" goto="false" newquery="false" operator="STARTSWITH" or="false" value="Create VTB:"/&gt;&lt;item endquery="true" field="" goto="false" newquery="false" operator="=" or="false" value=""/&gt;&lt;/filter_condition&gt;&lt;from/&gt;&lt;name&gt;Process VTB Creation Email&lt;/name&gt;&lt;order&gt;100&lt;/order&gt;&lt;reply_email/&gt;&lt;required_roles/&gt;&lt;script&gt;&lt;![CDATA[(function runAction( /*GlideRecord*/ current, /*GlideRecord*/ event, /*EmailWrapper*/ email, /*ScopedEmailLogger*/ logger, /*EmailClassifier*/ classifier) {
+    var subject = email.subject.toString();
+    var regex = new SNC.Regex('/[^:]*$/im'); //Regex to get after colon
+    var vtb_name = regex.match(subject).toString().trim(); //Regex match and make a lowercase string
+    var vtb_name_lower = vtb_name.toLowerCase().replace(/ /g, "_"); //Replace any spaces with undescores
+
+    var impsetTable = "vtb_cards_" + vtb_name_lower;
+	var vtb_board = '';
+    var transformMapID = 'bdea4e522f811110860bdcb6f699b6f9'; //VTB Task Creation transform map
+
+
+    // Create the datasource record
+    current.name = "VTB Creation Request from: " + email.from; //Feel free to rename this as appropriate
+    current.import_set_table_name = impsetTable;
+    current.file_retrieval_method = "Attachment";
+    current.type = "File";
+    current.format = "Excel";
+    current.header_row = 1;
+    current.sheet_number = 1;
+    var dataSourceID = current.insert();
+
+	// Update Source Table for Transform Map
+	var map = new GlideRecord('sys_transform_map');
+	map.get(transformMapID);
+	map.source_table = impsetTable;
+	map.update();
+
+    // Create VTB Board
+    var vtbRec = new GlideRecord('vtb_board');
+    vtbRec.name = vtb_name;
+    vtbRec.owner = gs.getUserID();
+    vtbRec.card_limit = '1000';
+    vtbRec.background_color = 'vtb-board-color-16';
+    vtb_board = vtbRec.insert();
+
+
+    // Create Standard VTB Lanes
+    var vtbLanes = ['Documentation', 'Client Follow Up', 'Review', 'Ready for Build', 'WIP', 'Unit Testing', 'Prototype', 'UAT', 'Complete', 'Future Requests'];
+    var vtbLane = new GlideRecord('vtb_lane');
+    var order = 100;
+    for (var i = 0; i &lt; vtbLanes.length; i++) {
+        vtbLane.name = vtbLanes[i];
+        vtbLane.board = vtb_board;
+        vtbLane.order = order;
+        vtbLane.insert();
+        order += 100;
+    }
+
+    // Schedule import and transform
+    new global.EmailFileImportUtils().scheduleImport(dataSourceID, transformMapID, impsetTable, vtb_name);
+})(current, event, email, logger, classifier);]]&gt;&lt;/script&gt;&lt;stop_processing&gt;true&lt;/stop_processing&gt;&lt;sys_class_name&gt;sysevent_in_email_action&lt;/sys_class_name&gt;&lt;sys_created_by&gt;admin&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2022-07-19 18:51:11&lt;/sys_created_on&gt;&lt;sys_domain&gt;global&lt;/sys_domain&gt;&lt;sys_domain_path&gt;/&lt;/sys_domain_path&gt;&lt;sys_id&gt;10557c252f301110860bdcb6f699b6dd&lt;/sys_id&gt;&lt;sys_mod_count&gt;20&lt;/sys_mod_count&gt;&lt;sys_name&gt;Process VTB Creation Email&lt;/sys_name&gt;&lt;sys_overrides/&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sysevent_in_email_action_10557c252f301110860bdcb6f699b6dd&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;admin&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2022-08-03 18:52:29&lt;/sys_updated_on&gt;&lt;table&gt;sys_data_source&lt;/table&gt;&lt;template/&gt;&lt;type&gt;new&lt;/type&gt;&lt;/sysevent_in_email_action&gt;&lt;/record_update&gt;</payload>
+<payload_hash>-218308169</payload_hash>
+<remote_update_set display_value="Automate VTB Creation">2bfe86562f811110860bdcb6f699b699</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>admin</sys_created_by>
+<sys_created_on>2022-08-03 19:08:06</sys_created_on>
+<sys_id>2ffe86562f811110860bdcb6f699b699</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>182650d56910000001</sys_recorded_at>
+<sys_updated_by>admin</sys_updated_by>
+<sys_updated_on>2022-08-03 19:08:06</sys_updated_on>
+<table>sys_data_source</table>
+<target_name>Process VTB Creation Email</target_name>
+<type>Inbound Email Actions</type>
+<update_domain>global</update_domain>
+<update_guid>b66b0a12878111101b9efc789185a238</update_guid>
+<update_guid_history>b66b0a12878111101b9efc789185a238:-218308169,c5c48eda25411110c33757d45e7c70b2:-2127271877,9a52b8f5b5bc11105fe27ad6ff949dbb:-621958143,49d034b540bc111064c2e0978817d310:-602130506,4d2fac3530bc1110460e98941d87d02b:2017541128,957b243114bc111009afc395d2385f26:1665642437,109ec6a564b01110d373c39686ae7b5b:1555572847,867851652ab011103f807d03671a67e9:550928081,1886d1e11eb0111024e3a822b93cf0db:-1157868784,e00f4d2d8d701110d3bee8d71f12ade5:-1087159062,714909a5f9701110b85c531f68bbcf54:-1106671599,8a688da53a701110fe0999ed20a46778:-262696446,39978d6546701110db36d13118c4ba7e:1772344103,97f685651b70111011c8f0c0b66767c5:1641347012,d0e68125a8701110fec366f3ac3e5f3d:1553547099,70c485e19770111096c0449433d1574f:-1127107778,68924521ca70111032a5c285696620b1:1382125928,19f0c1ad4b30111095f7c95f1c23aeb2:-405206204,332ebce9db3011105a6f60d4124e41f4:-784096761,532c70e9c23011103182a0ca0e9eb1e1:240243655,714bbc253b301110d16b73531a5f40ba:365470476</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sys_transform_script_00bd42162f811110860bdcb6f699b6cb</name>
+<payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_transform_script"&gt;&lt;sys_transform_script action="INSERT_OR_UPDATE"&gt;&lt;active&gt;true&lt;/active&gt;&lt;map display_value="VTB Task Creation"&gt;bdea4e522f811110860bdcb6f699b6f9&lt;/map&gt;&lt;order&gt;100&lt;/order&gt;&lt;script&gt;&lt;![CDATA[(function runTransformScript(source, map, log, target /*undefined onStart*/ ) {
+
+	var vtbCard = new GlideRecord('vtb_card');
+	vtbCard.board = source.u_vtb;
+	vtbCard.lane = source.u_lane;
+	vtbCard.task = target.sys_id;
+	vtbCard.insert();
+	new global.EmailFileImportUtils().associateCardToBoard(vtbCard, target, source);
+
+})(source, map, log, target);]]&gt;&lt;/script&gt;&lt;sys_class_name&gt;sys_transform_script&lt;/sys_class_name&gt;&lt;sys_created_by&gt;admin&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2022-08-03 19:02:40&lt;/sys_created_on&gt;&lt;sys_id&gt;00bd42162f811110860bdcb6f699b6cb&lt;/sys_id&gt;&lt;sys_mod_count&gt;0&lt;/sys_mod_count&gt;&lt;sys_name&gt;onAfter&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_transform_script_00bd42162f811110860bdcb6f699b6cb&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;admin&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2022-08-03 19:02:40&lt;/sys_updated_on&gt;&lt;when&gt;onAfter&lt;/when&gt;&lt;/sys_transform_script&gt;&lt;/record_update&gt;</payload>
+<payload_hash>1216997667</payload_hash>
+<remote_update_set display_value="Automate VTB Creation">2bfe86562f811110860bdcb6f699b699</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>admin</sys_created_by>
+<sys_created_on>2022-08-03 19:08:06</sys_created_on>
+<sys_id>63fe82962f811110860bdcb6f699b6f2</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>1826516a9f50000001</sys_recorded_at>
+<sys_updated_by>admin</sys_updated_by>
+<sys_updated_on>2022-08-03 19:08:06</sys_updated_on>
+<table/>
+<target_name>onAfter</target_name>
+<type>Transform Script</type>
+<update_domain>global</update_domain>
+<update_guid>00cdced2f6811110a9a8fa3f578c6de8</update_guid>
+<update_guid_history>00cdced2f6811110a9a8fa3f578c6de8:1216997667</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sys_transform_entry_4b0bc2922f811110860bdcb6f699b699</name>
+<payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_transform_entry"&gt;&lt;sys_transform_entry action="INSERT_OR_UPDATE"&gt;&lt;choice_action&gt;create&lt;/choice_action&gt;&lt;coalesce&gt;false&lt;/coalesce&gt;&lt;coalesce_case_sensitive&gt;false&lt;/coalesce_case_sensitive&gt;&lt;coalesce_empty_fields&gt;false&lt;/coalesce_empty_fields&gt;&lt;date_format&gt;yyyy-MM-dd HH:mm:ss&lt;/date_format&gt;&lt;map display_value="VTB Task Creation"&gt;bdea4e522f811110860bdcb6f699b6f9&lt;/map&gt;&lt;reference_value_field/&gt;&lt;source_field&gt;u_short_description&lt;/source_field&gt;&lt;source_script&gt;&lt;![CDATA[answer = (function transformEntry(source) {
+
+	// Add your code here
+	return ""; // return the value to be put into the target field
+
+})(source);]]&gt;&lt;/source_script&gt;&lt;source_table&gt;vtb_cards_final_creation_test&lt;/source_table&gt;&lt;sys_class_name&gt;sys_transform_entry&lt;/sys_class_name&gt;&lt;sys_created_by&gt;admin&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2022-08-03 18:50:52&lt;/sys_created_on&gt;&lt;sys_id&gt;4b0bc2922f811110860bdcb6f699b699&lt;/sys_id&gt;&lt;sys_mod_count&gt;0&lt;/sys_mod_count&gt;&lt;sys_name&gt;u_short_description&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_transform_entry_4b0bc2922f811110860bdcb6f699b699&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;admin&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2022-08-03 18:50:52&lt;/sys_updated_on&gt;&lt;target_field&gt;short_description&lt;/target_field&gt;&lt;target_table&gt;vtb_task&lt;/target_table&gt;&lt;use_source_script&gt;false&lt;/use_source_script&gt;&lt;/sys_transform_entry&gt;&lt;/record_update&gt;</payload>
+<payload_hash>-1564602212</payload_hash>
+<remote_update_set display_value="Automate VTB Creation">2bfe86562f811110860bdcb6f699b699</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>admin</sys_created_by>
+<sys_created_on>2022-08-03 19:08:06</sys_created_on>
+<sys_id>a7fe86562f811110860bdcb6f699b69a</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>182650bdbbe0000001</sys_recorded_at>
+<sys_updated_by>admin</sys_updated_by>
+<sys_updated_on>2022-08-03 19:08:06</sys_updated_on>
+<table/>
+<target_name>u_short_description</target_name>
+<type>Field Map</type>
+<update_domain>global</update_domain>
+<update_guid>1f0bc292a581111083b217af496e999a</update_guid>
+<update_guid_history>1f0bc292a581111083b217af496e999a:-1564602212</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sys_transform_map_bdea4e522f811110860bdcb6f699b6f9</name>
+<payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_transform_map"&gt;&lt;sys_transform_map action="INSERT_OR_UPDATE"&gt;&lt;active&gt;true&lt;/active&gt;&lt;copy_empty_fields&gt;false&lt;/copy_empty_fields&gt;&lt;create_new_record_on_empty_coalesce_fields&gt;false&lt;/create_new_record_on_empty_coalesce_fields&gt;&lt;enforce_mandatory_fields&gt;No&lt;/enforce_mandatory_fields&gt;&lt;name&gt;VTB Task Creation&lt;/name&gt;&lt;order&gt;100&lt;/order&gt;&lt;run_business_rules&gt;true&lt;/run_business_rules&gt;&lt;run_script&gt;false&lt;/run_script&gt;&lt;script&gt;&lt;![CDATA[(function transformRow(source, target, map, log, isUpdate) {
+
+	// Add your code here
+
+})(source, target, map, log, action==="update");]]&gt;&lt;/script&gt;&lt;source_table&gt;vtb_cards_final_creation_test&lt;/source_table&gt;&lt;sys_class_name&gt;sys_transform_map&lt;/sys_class_name&gt;&lt;sys_created_by&gt;admin&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2022-08-03 18:50:45&lt;/sys_created_on&gt;&lt;sys_id&gt;bdea4e522f811110860bdcb6f699b6f9&lt;/sys_id&gt;&lt;sys_mod_count&gt;0&lt;/sys_mod_count&gt;&lt;sys_name&gt;VTB Task Creation&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_transform_map_bdea4e522f811110860bdcb6f699b6f9&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;admin&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2022-08-03 18:50:45&lt;/sys_updated_on&gt;&lt;target_table&gt;vtb_task&lt;/target_table&gt;&lt;/sys_transform_map&gt;&lt;/record_update&gt;</payload>
+<payload_hash>-1449553620</payload_hash>
+<remote_update_set display_value="Automate VTB Creation">2bfe86562f811110860bdcb6f699b699</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>admin</sys_created_by>
+<sys_created_on>2022-08-03 19:08:06</sys_created_on>
+<sys_id>affe82962f811110860bdcb6f699b6f1</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>182650bc2640000001</sys_recorded_at>
+<sys_updated_by>admin</sys_updated_by>
+<sys_updated_on>2022-08-03 19:08:06</sys_updated_on>
+<table/>
+<target_name>VTB Task Creation</target_name>
+<type>Table Transform Map</type>
+<update_domain>global</update_domain>
+<update_guid>250b4292c58111107baa68418c2da883</update_guid>
+<update_guid_history>250b4292c58111107baa68418c2da883:-1449553620</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sys_script_include_bdae092d2f701110860bdcb6f699b615</name>
+<payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_script_include"&gt;&lt;sys_script_include action="INSERT_OR_UPDATE"&gt;&lt;access&gt;public&lt;/access&gt;&lt;active&gt;true&lt;/active&gt;&lt;api_name&gt;global.EmailFileImportUtils&lt;/api_name&gt;&lt;caller_access/&gt;&lt;client_callable&gt;false&lt;/client_callable&gt;&lt;description/&gt;&lt;name&gt;EmailFileImportUtils&lt;/name&gt;&lt;script&gt;&lt;![CDATA[var EmailFileImportUtils = Class.create();
+EmailFileImportUtils.prototype = {
+    initialize: function() {},
+
+    scheduleImport: function(dataSourceID, transformMapID, impsetTable, vtb_name) {
+        /*
+         * Create scheduled job to process import
+         *
+         * The inbound email action will generate an import data source, however the attachment isn't copied to the data source until
+         * after the insert of the record.   The code below will create a scheduled job to process the import 30 seconds later
+         * so that attachment has time to be copied to the data source from the email.
+         */
+
+        var schRec = new GlideRecord("sys_trigger");
+        schRec.name = "Load Data Source: " + dataSourceID;
+        schRec.trigger_type = 0; // Run Once
+        schRec.script = "new global.EmailFileImportUtils().loadImportSet('" + dataSourceID + "', '" + transformMapID + "', '" + impsetTable + "', '" + vtb_name + "')";
+
+        var nextAction = new GlideDateTime();
+        nextAction.addSeconds(30); // 30 seconds should be enough time however this can be changed.
+        schRec.next_action = nextAction;
+        schRec.insert();
+    },
+
+    loadImportSet: function(dataSourceID, transformMapID, impsetTable, vtb_name) {
+        // Get Datasource Record
+        var dataSource = new GlideRecord("sys_data_source");
+        dataSource.get(dataSourceID);
+
+        // If CSV and header isn't on row 1, recreate attachment with empty rows removed, and delete original
+        if (dataSource.getValue("format") == "CSV" &amp;&amp; dataSource.getValue("header_row") &gt; 1) {
+            var attachmentRec = new GlideRecord("sys_attachment");
+            attachmentRec.addQuery("table_sys_id", dataSource.getValue("sys_id"));
+            attachmentRec.query();
+            if (attachmentRec.next()) {
+                var oldAttachmentID = attachmentRec.getValue("sys_id");
+                var inputStream = new GlideSysAttachment().getContentStream(oldAttachmentID);
+                var textReader = new GlideTextReader(inputStream);
+                var ln = " ";
+                var newLine = "";
+
+                var lineCounter = 0;
+                var headerRow = parseInt(dataSource.getValue("header_row"));
+                while ((ln = textReader.readLine()) != null) {
+                    lineCounter += 1;
+                    if (lineCounter &lt; headerRow) {
+                        continue;
+                    }
+
+                    if (ln.length &gt; 1) {
+                        newLine += ln + "\n";
+                    }
+                }
+                new GlideSysAttachment().write(dataSource, 'Changed ' + attachmentRec.getValue('file_name'), "text/csv", newLine);
+                //Delete original email attachment so that the new one is processed.  If two remain, API may get confused on which one to process.
+                attachmentRec.deleteRecord();
+            }
+        }
+
+        // Process data source file
+        var loader = new GlideImportSetLoader();
+        var importSetRec = loader.getImportSetGr(dataSource);
+        var ranload = loader.loadImportSetTable(importSetRec, dataSource);
+        importSetRec.state = "loaded";
+        importSetRec.update();
+
+        //Update our import set with our VTB and Lane
+        var impset = new GlideRecord(impsetTable);
+        impset.query();
+        while (impset.next()) {
+            impset.u_vtb = vtb_name;
+            impset.u_lane = 'Documentation';
+            impset.update();
+        }
+
+        //Transform import set
+        var transformWorker = new GlideImportSetTransformerWorker(importSetRec.sys_id, transformMapID);
+        transformWorker.setBackground(true);
+        transformWorker.start();
+    },
+
+    associateCardToBoard: function(vtbCard, target, source) {
+        var board = '';
+        var lane = '';
+
+        //Find out VTB Board
+        var boardLookup = new GlideRecord('vtb_board');
+        boardLookup.addEncodedQuery('name=' + source.u_vtb);
+        boardLookup.query();
+        if (boardLookup.next())
+            board = boardLookup.sys_id;
+
+        //Find our VTB Board Documentation Lane
+        var laneLookup = new GlideRecord('vtb_lane');
+        laneLookup.addEncodedQuery('name=Documentation^board=' + board);
+        laneLookup.query();
+        if (laneLookup.next())
+            lane = laneLookup.sys_id;
+
+		gs.log('TACO Board: ' + board + ' Lane: ' + lane + ' Task: ' + target.sys_id + ' ('+target.number + ')');
+        //Update our card to associate to board and lane
+        var card = new GlideRecord('vtb_card');
+        card.addEncodedQuery('task=' + target.sys_id);
+		card.query();
+        if (card.next()) {
+            card.board = board;
+            card.lane = lane;
+            card.update();
+        }
+    },
+
+    type: 'EmailFileImportUtils'
+
+};]]&gt;&lt;/script&gt;&lt;sys_class_name&gt;sys_script_include&lt;/sys_class_name&gt;&lt;sys_created_by&gt;admin&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2022-07-19 20:16:57&lt;/sys_created_on&gt;&lt;sys_id&gt;bdae092d2f701110860bdcb6f699b615&lt;/sys_id&gt;&lt;sys_mod_count&gt;15&lt;/sys_mod_count&gt;&lt;sys_name&gt;EmailFileImportUtils&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_script_include_bdae092d2f701110860bdcb6f699b615&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;admin&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2022-08-03 19:00:33&lt;/sys_updated_on&gt;&lt;/sys_script_include&gt;&lt;/record_update&gt;</payload>
+<payload_hash>146220345</payload_hash>
+<remote_update_set display_value="Automate VTB Creation">2bfe86562f811110860bdcb6f699b699</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>admin</sys_created_by>
+<sys_created_on>2022-08-03 19:08:06</sys_created_on>
+<sys_id>e3fe86562f811110860bdcb6f699b69a</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>1826514bb750000001</sys_recorded_at>
+<sys_updated_by>admin</sys_updated_by>
+<sys_updated_on>2022-08-03 19:08:06</sys_updated_on>
+<table/>
+<target_name>EmailFileImportUtils</target_name>
+<type>Script Include</type>
+<update_domain>global</update_domain>
+<update_guid>4d4dced269811110e867bd0c60554ce3</update_guid>
+<update_guid_history>4d4dced269811110e867bd0c60554ce3:146220345,e45cc6d2568111109c07f80b0f25a32c:1967994062,9e980e9e154111105185769c91d65a69:2049882708,22760a1ed241111013faa5fc0dac8971:1763954891,3ae4461e94411110cf694c70d6f0033e:-198162342,7d9302daa14111107fb8961a90a9c08c:-1784038136,9b30134625301110fbef7e8a0480b6ca:-429506835,1466b8f91cbc1110929e3b03ba961c76:-1625972057,2e11f8b576bc111022ad61fe7055c9fe:563393509,e24f20355bbc111070467ab902963ffd:-821693399,163e6cb17ebc1110230bf5fa57bf9376:1853999133,de6dacb1d6bc11104e813b316d5de881:-1331709598,104da07117bc1110688a8caf1f98955a:-1378709800,261de8b14fbc1110a010a6735da7390f:364531243,fe1cac31e5bc11100e574b8759d8ffd5:943369576,82ee452de7701110bc5c19798a6365ef:1111186794</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+<sys_update_xml action="INSERT_OR_UPDATE">
+<action>INSERT_OR_UPDATE</action>
+<application display_value="Global">global</application>
+<category>customer</category>
+<comments/>
+<name>sys_transform_entry_8b0b8ede2f411110860bdcb6f699b6a9</name>
+<payload>&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;record_update table="sys_transform_entry"&gt;&lt;sys_transform_entry action="INSERT_OR_UPDATE"&gt;&lt;choice_action&gt;create&lt;/choice_action&gt;&lt;coalesce&gt;false&lt;/coalesce&gt;&lt;coalesce_case_sensitive&gt;false&lt;/coalesce_case_sensitive&gt;&lt;coalesce_empty_fields&gt;false&lt;/coalesce_empty_fields&gt;&lt;date_format&gt;yyyy-MM-dd HH:mm:ss&lt;/date_format&gt;&lt;map display_value="VTB Task Creation"&gt;bdea4e522f811110860bdcb6f699b6f9&lt;/map&gt;&lt;reference_value_field/&gt;&lt;source_field&gt;u_description&lt;/source_field&gt;&lt;source_script&gt;&lt;![CDATA[answer = (function transformEntry(source) {
+
+	// Add your code here
+	return ""; // return the value to be put into the target field
+
+})(source);]]&gt;&lt;/source_script&gt;&lt;source_table&gt;vtb_cards_final_creation_test&lt;/source_table&gt;&lt;sys_class_name&gt;sys_transform_entry&lt;/sys_class_name&gt;&lt;sys_created_by&gt;admin&lt;/sys_created_by&gt;&lt;sys_created_on&gt;2022-08-03 18:50:52&lt;/sys_created_on&gt;&lt;sys_id&gt;8b0b8ede2f411110860bdcb6f699b6a9&lt;/sys_id&gt;&lt;sys_mod_count&gt;0&lt;/sys_mod_count&gt;&lt;sys_name&gt;u_description&lt;/sys_name&gt;&lt;sys_package display_value="Global" source="global"&gt;global&lt;/sys_package&gt;&lt;sys_policy/&gt;&lt;sys_scope display_value="Global"&gt;global&lt;/sys_scope&gt;&lt;sys_update_name&gt;sys_transform_entry_8b0b8ede2f411110860bdcb6f699b6a9&lt;/sys_update_name&gt;&lt;sys_updated_by&gt;admin&lt;/sys_updated_by&gt;&lt;sys_updated_on&gt;2022-08-03 18:50:52&lt;/sys_updated_on&gt;&lt;target_field&gt;description&lt;/target_field&gt;&lt;target_table&gt;vtb_task&lt;/target_table&gt;&lt;use_source_script&gt;false&lt;/use_source_script&gt;&lt;/sys_transform_entry&gt;&lt;/record_update&gt;</payload>
+<payload_hash>1179633279</payload_hash>
+<remote_update_set display_value="Automate VTB Creation">2bfe86562f811110860bdcb6f699b699</remote_update_set>
+<replace_on_upgrade>false</replace_on_upgrade>
+<sys_created_by>admin</sys_created_by>
+<sys_created_on>2022-08-03 19:08:06</sys_created_on>
+<sys_id>ebfe82962f811110860bdcb6f699b6f1</sys_id>
+<sys_mod_count>0</sys_mod_count>
+<sys_recorded_at>182650bdb800000001</sys_recorded_at>
+<sys_updated_by>admin</sys_updated_by>
+<sys_updated_on>2022-08-03 19:08:06</sys_updated_on>
+<table/>
+<target_name>u_description</target_name>
+<type>Field Map</type>
+<update_domain>global</update_domain>
+<update_guid>cb0bc292a481111062a7661cb78de898</update_guid>
+<update_guid_history>cb0bc292a481111062a7661cb78de898:1179633279</update_guid_history>
+<update_set display_value=""/>
+<view/>
+</sys_update_xml>
+</unload>
