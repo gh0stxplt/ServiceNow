@@ -9,5 +9,6 @@ staleInteractions.query();
 while (staleInteractions.next()) {
     staleInteractions.setValue('state', 'closed_complete');
     staleInteractions.update();
-};
+}
+
 gs.log("Stale interactions closed on " + new GlideDateTime().getDate() + " - " + staleInteractions.getRowCount());
