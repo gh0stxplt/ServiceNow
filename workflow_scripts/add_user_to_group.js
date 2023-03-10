@@ -3,14 +3,13 @@
 addGroups();
 
 function addGroups(){
-	var addGrpsArray = [];
-	var grpstoadd = current.variable_pool.groups_to_add.toString();
-	addGrpsArray = grpstoadd.split(",");
-	for (var i=0; i<addGrpsArray.length; i++){
+	var grpsToAdd = current.variable_pool.list_collector_variable.toString();
+	grpsArray = grpsToAdd.split(",");
+	for (var i=0; i<grpsArray.length; i++){
 		var memberGR = new GlideRecord('sys_user_grmember');
 		memberGR.initialize();
 		memberGR.user = current.variable_pool.requested_for;
-		memberGR.group = addGrpsArray[i];
+		memberGR.group = grpsArray[i];
 		memberGR.insert();
 	}
 }
