@@ -1,0 +1,22 @@
+var keyValuePairs = {};
+/*
+    Populate keyValuePairs object with keys matching item variable names. 
+    Note: Types must match, reference fields MUST receive a sys_id
+*/
+
+var cartId = GlideGuid.generate(null);
+var cart = new sn_sc.CartJS();
+/*
+    Important: Specify a Requested For for the Request.
+    If this submission is coming from an automation create a user record for that automation.
+*/
+cart.setRequestedFor("user_sys_id");
+var item = {
+  "sysparm_id": '{item sys_id}',
+  'sysparm_quantity': '1',
+  'variables': keyValuePairs
+};
+cart.addToCart(item);
+
+var rc = cart.placeOrder();
+//rc gives access to submitted Request object -- e.g. rc.number returns REQ0000000
