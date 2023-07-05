@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<unload unload_date="2023-07-05 13:02:08">
+<sp_widget action="INSERT_OR_UPDATE">
+<category>custom</category>
+<client_script><![CDATA[api.controller = function($scope, spUtil) {
+    /* widget controller */
+    var c = this;
+
+    c.hrkb = true;
+    spUtil.get("kb-article-content").then(function(response) {
+        c.data.number = response.data.number;
+        c.data.permalink = response.data.permalink;
+        c.server.get({
+            action: 'checkIfHRKB',
+        }).then(function(response) {
+            c.hrkb = response.data.isHRKB;
+        });
+    });
+
+
+    $scope.createCaseFromArticle = function() {
+        c.server.get({
+            action: 'createCaseFromArticle',
+            number: c.data.number,
+            permalink: c.data.permalink
+        }).then(function(response) {
+            var caseLink = '<a href="' + gs.getProperty('glide.servlet.uri') + '?id=ticket&table=sn_hr_core_case&sys_id=' + response.data.newCase.sys_id + '">' + response.data.newCase.number + '</a>';
+            spUtil.addInfoMessage('A new HR case has been created for you ' + caseLink);
+        });
+
+    };
+
+};]]></client_script>
+<controller_as>c</controller_as>
+<css/>
+<data_table>sp_instance</data_table>
+<demo_data/>
+<description/>
+<docs display_value=""/>
+<field_list/>
+<has_preview>false</has_preview>
+<id>related_hr_services</id>
+<internal>false</internal>
+<link><![CDATA[function link(scope, element, attrs, controller) {
+  
+}]]></link>
+<name>Related HR Services</name>
+<option_schema/>
+<public>false</public>
+<roles/>
+<script><![CDATA[(function($sp) {
+    var kbSysId = $sp.getParameter('sys_id') ? $sp.getParameter('sys_id') : $sp.getParameter('sys_kb_id');
+    data.services = getHRServices(kbSysId);
+    data.hrkb = checkIfHRKB(kbSysId);
+
+    if (input.action == 'createCaseFromArticle')
+        data.newCase = createCaseFromArticle(input.number, input.permalink);
+
+
+    function getHRServices(kbSysId) {
+        var kbGr = new GlideRecord('kb_knowledge');
+        kbGr.get(kbSysId);
+
+        var kbShortDesc = kbGr.short_description;
+
+        var sc = new GlideRecord('sc_cat_item');
+        var splitString = kbShortDesc.split(" ");
+        var quotedWords = [];
+        for (var i = 0; i < splitString.length; i++) {
+            quotedWords.push('"' + splitString[i] + '"');
+        }
+        var joinedString = quotedWords.join(" | ");
+        sc.addEncodedQuery('sc_catalogsLIKE{catalog sys_id}^sys_class_name!=sc_cat_item_wizard^sys_class_name!=sc_cat_item_content');
+        sc.addQuery('123TEXTQUERY321', joinedString);
+        sc.setLimit(5);
+        sc.orderByDesc("ir_query_score");
+        sc.query();
+
+        var results = [];
+        while (sc.next()) {
+            if (!$sp.canReadRecord(sc))
+                continue;
+
+            var service = {};
+            $sp.getRecordDisplayValues(service, sc, 'name,sys_id');
+            service.url = gs.getProperty('glide.servlet.uri') + 'id=sc_cat_item&sys_id=' + sc.sys_id;
+            results.push(service);
+        }
+        return results;
+    }
+
+    function createCaseFromArticle(number, permalink) {
+        var hrCaseGr = new GlideRecord('sn_hr_core_case');
+        hrCaseGr.initialize();
+        hrCaseGr.opened_for = gs.getUserID();
+        hrCaseGr.assignment_group = '{default assignment group}';
+        hrCaseGr.short_description = 'New HR Case from ' + gs.getUserDisplayName();
+        hrCaseGr.description = 'HR Case Created from <a href="' + permalink + '" target="_blank">' + number + '</a>';
+        var newCaseSysId = hrCaseGr.insert();
+
+        var newCaseGr = new GlideRecord('sn_hr_core_case');
+        newCaseGr.get(newCaseSysId);
+        var newCase = {
+            number: newCaseGr.getValue('number'),
+            sys_id: newCaseGr.getUniqueValue()
+        };
+
+        return newCase;
+    }
+
+    function checkIfHRKB(kbSysId) {
+        var kbGr = new GlideRecord('kb_knowledge');
+        kbGr.get(kbSysId);
+        if (kbGr.kb_knowledge_base.toString() == '{HR Knowledge Base}')
+            return true;
+        else
+            return false;
+    }
+})($sp);]]></script>
+<servicenow>false</servicenow>
+<sys_class_name>sp_widget</sys_class_name>
+<sys_created_by>a.logan.poynter</sys_created_by>
+<sys_created_on>2023-02-14 17:31:35</sys_created_on>
+<sys_id>0dd6c2811b41615092024082b24bcb6b</sys_id>
+<sys_mod_count>20</sys_mod_count>
+<sys_name>Related HR Services</sys_name>
+<sys_package display_value="Global" source="global">global</sys_package>
+<sys_policy/>
+<sys_scope display_value="Global">global</sys_scope>
+<sys_update_name>sp_widget_0dd6c2811b41615092024082b24bcb6b</sys_update_name>
+<sys_updated_by>admin</sys_updated_by>
+<sys_updated_on>2023-07-05 12:26:37</sys_updated_on>
+<template><![CDATA[<div class="panel panel-default" style="padding:2.4rem" ng-show="data.hrkb">
+    <div class="panel-heading" style="background-color: transparent !important;padding:0;padding-bottom:1.6rem">
+        <h2 class="panel-title">Related HR Services</h2>
+    </div>
+    <div class="panel-body" style="padding:0">
+        <ul class="list-group result-container">
+            <li class="list-group-item" style="border: none !important" ng-repeat="service in data.services">
+                <a href={{service.url}}>{{service.name}}</a>
+            </li>
+        </ul>
+        <div>
+            <p style="text-align:center;padding-top:1.6rem">Still need help?</p>
+            <button style="display:flex;margin:auto" class="open-case btn btn-primary" ng-click="createCaseFromArticle()">Open a case</button>
+        </div>
+    </div>
+</div>]]></template>
+</sp_widget>
+</unload>
